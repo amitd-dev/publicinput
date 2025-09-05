@@ -1,0 +1,242 @@
+# Azure DevOps Pipeline for Playwright Test Automation
+# This pipeline runs Playwright tests across different environments
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - feature/*
+  paths:
+    exclude:
+      - README.md
+      - .gitignore
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+variables:
+  # Pipeline variable for environment selection (dev, qa, prod)
+  environment: 'dev'
+  nodeVersion: '18.x'
+
+stages:
+- stage: Test
+  displayName: 'Run Playwright Tests'
+  jobs:
+  - job: PlaywrightTests
+    displayName: 'Playwright Test Execution'
+    pool:
+      vmImage: 'ubuntu-latest'
+    
+    strategy:
+      matrix:
+        Chrome:
+          browser: 'chromium'
+        Firefox:
+          browser: 'firefox'
+        WebKit:
+          browser: 'webkit'
+    
+    steps:
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      inputs:
+        versionSpec: $(nodeVersion)
+    
+    - script: |
+        echo "Environment: $(environment)"
+        echo "Browser: $(browser)"
+        echo "Node version: $(node.version)"
+        echo "NPM version: $(npm.version)"
+      displayName: 'Display Environment Info'
+    
+    - task: Cache@2
+      displayName: 'Cache npm dependencies'
+      inputs:
+        key: 'npm | "$(Agent.OS)" | package-lock.json'
+        restoreKeys: |
+          npm | "$(Agent.OS)"
+        path: '$(npm_config_cache)'
+    
+    - script: |
+        npm ci
+      displayName: 'Install Dependencies'
+    
+    - script: |
+        npx playwright install --with-deps $(browser)
+      displayName: 'Install Playwright Browsers'
+    
+    - script: |
+        # Set environment variable for Playwright config
+        export ENV=$(environment)
+        echo "Running tests for environment: $ENV"
+        echo "Running tests for browser: $(browser)"
+        
+        # Run Playwright tests
+        npx playwright test --project=$(browser) --reporter=junit,html,list
+      displayName: 'Run Playwright Tests'
+      env:
+        ENV: $(environment)
+        # Add any additional environment variables here
+        # USER_EMAIL: $(USER_EMAIL)
+        # USER_PASSWORD: $(USER_PASSWORD)
+        # BASE_URL: $(BASE_URL)
+      continueOnError: true
+    
+    - task: PublishTestResults@2
+      displayName: 'Publish Test Results'
+      condition: always()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'test-results/junit-results.xml'
+        testRunTitle: 'Playwright Tests - $(browser) - $(environment)'
+        mergeTestResults: true
+        failTaskOnFailedTests: false
+    
+    - task: PublishHtmlReport@1
+      displayName: 'Publish HTML Test Report'
+      condition: always()
+      inputs:
+        reportDir: 'playwright-report'
+        tabName: 'Playwright Report - $(browser)'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Test Artifacts'
+      condition: always()
+      inputs:
+        pathToPublish: 'test-results'
+        artifactName: 'test-results-$(browser)-$(environment)'
+        publishLocation: 'Container'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish HTML Report'
+      condition: always()
+      inputs:
+        pathToPublish: 'playwright-report'
+        artifactName: 'playwright-report-$(browser)-$(environment)'
+        publishLocation: 'Container'
+
+- stage: Deploy
+  displayName: 'Deploy Test Results'
+  dependsOn: Test
+  condition: always()
+  jobs:
+  - deployment: DeployResults
+    displayName: 'Deploy Test Results'
+    environment: 'Test Results'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: 'test-results-*'
+          - download: current
+            artifact: 'playwright-report-*'
+          
+          - script: |
+              echo "Test execution completed for environment: $(environment)"
+              echo "Artifacts have been published and are available for download"
+            displayName: 'Deployment Summary'
+
+# Additional pipeline configurations for different scenarios
+
+# Pipeline for running tests on specific branches
+- stage: BranchSpecificTests
+  displayName: 'Branch Specific Tests'
+  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - job: SmokeTests
+    displayName: 'Smoke Tests Only'
+    pool:
+      vmImage: 'ubuntu-latest'
+    
+    steps:
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      inputs:
+        versionSpec: $(nodeVersion)
+    
+    - script: |
+        npm ci
+      displayName: 'Install Dependencies'
+    
+    - script: |
+        npx playwright install --with-deps chromium
+      displayName: 'Install Chromium Browser'
+    
+    - script: |
+        export ENV=$(environment)
+        npx playwright test --project=chromium --grep="smoke" --reporter=junit,html
+      displayName: 'Run Smoke Tests'
+      env:
+        ENV: $(environment)
+    
+    - task: PublishTestResults@2
+      displayName: 'Publish Smoke Test Results'
+      condition: always()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'test-results/junit-results.xml'
+        testRunTitle: 'Smoke Tests - $(environment)'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Smoke Test Artifacts'
+      condition: always()
+      inputs:
+        pathToPublish: 'test-results'
+        artifactName: 'smoke-test-results-$(environment)'
+        publishLocation: 'Container'
+
+# Pipeline for running tests with retries on failure
+- stage: RetryFailedTests
+  displayName: 'Retry Failed Tests'
+  dependsOn: Test
+  condition: failed()
+  jobs:
+  - job: RetryTests
+    displayName: 'Retry Failed Tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+    
+    steps:
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      inputs:
+        versionSpec: $(nodeVersion)
+    
+    - script: |
+        npm ci
+      displayName: 'Install Dependencies'
+    
+    - script: |
+        npx playwright install --with-deps
+      displayName: 'Install All Playwright Browsers'
+    
+    - script: |
+        export ENV=$(environment)
+        npx playwright test --retries=3 --reporter=junit,html,list
+      displayName: 'Retry Failed Tests'
+      env:
+        ENV: $(environment)
+    
+    - task: PublishTestResults@2
+      displayName: 'Publish Retry Test Results'
+      condition: always()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'test-results/junit-results.xml'
+        testRunTitle: 'Retry Tests - $(environment)'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Retry Test Artifacts'
+      condition: always()
+      inputs:
+        pathToPublish: 'test-results'
+        artifactName: 'retry-test-results-$(environment)'
+        publishLocation: 'Container'

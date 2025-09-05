@@ -1,0 +1,43 @@
+{
+  "name": "playwright-automation-framework",
+  "version": "1.0.0",
+  "description": "Complete Playwright automation testing framework with TypeScript and Page Object Model",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:dev": "ENV=dev playwright test",
+    "test:qa": "ENV=qa playwright test",
+    "test:prod": "ENV=prod playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "install:browsers": "playwright install --with-deps",
+    "setup": "chmod +x scripts/setup.sh && ./scripts/setup.sh",
+    "lint": "eslint . --ext .ts,.js",
+    "lint:fix": "eslint . --ext .ts,.js --fix"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "typescript",
+    "e2e"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "@types/dotenv": "^8.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.17.0",
+    "dotenv": "^16.3.1"
+  }
+}
