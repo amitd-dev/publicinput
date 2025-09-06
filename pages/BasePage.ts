@@ -21,7 +21,7 @@ export abstract class BasePage {
   async navigateTo(url: string): Promise<void> {
     TestHelpers.logStep(`Navigating to: ${url}`);
     await this.page.goto(url);
-    await TestHelpers.waitForPageLoad(this.page);
+    //await TestHelpers.waitForPageLoad(this.page);
   }
 
   /**

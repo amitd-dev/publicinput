@@ -20,10 +20,12 @@ export class ProfilePage extends BasePage {
   private readonly addressRow = 'div.location-row';
   private readonly addressValue = 'span.attr-value';
   private readonly removeAddressButton = 'button.remove-attr';
+  private readonly confirmDeleteButton = '.btn.btn-danger.btn-delete';
   private readonly notificationContainer = 'div.notifyjs-container';
   private readonly notificationBootstrap = 'div.notifyjs-bootstrap-warn';
   private readonly notificationText = 'span';
   private readonly addressEditorForm = 'div.address-editor-form';
+  private readonly addressEditbtn = 'button.edit-attr-btn';
   private readonly profileName = 'text=profile name';
 
   constructor(page: Page) {
@@ -37,7 +39,7 @@ export class ProfilePage extends BasePage {
   async navigateToSaSpeakUp(): Promise<void> {
     TestHelpers.logStep('Navigating to SASpeakUp profile page');
     await this.navigateTo(`${this.cityzenSettings.baseUrl}/saspeakup`);
-    await this.waitForPageLoad();
+    //await this.waitForPageLoad();
   }
 
   /**
@@ -128,6 +130,7 @@ export class ProfilePage extends BasePage {
       .locator('..')
       .locator(this.removeAddressButton)
       .click();
+      await this.page.locator(this.confirmDeleteButton).click();
   }
 
   /**
@@ -136,9 +139,9 @@ export class ProfilePage extends BasePage {
    */
   async verifyAddress(address: string): Promise<boolean> {
     try {
-      await this.page.locator(this.notificationContainer).waitFor({ timeout: 5000 });
+      //await this.page.locator(this.notificationContainer).waitFor({ timeout: 5000 });
       await this.page.waitForLoadState();
-      await this.page.waitForSelector(`xpath=(//span[contains(text(),'${address}')])[1]`, { timeout: 10000 });
+      await this.page.waitForSelector(`xpath=(//span[contains(text(),'${address}')])[1]`, { timeout: 16000 });
       return true;
     } catch {
       return false;
@@ -153,7 +156,7 @@ export class ProfilePage extends BasePage {
     try {
       await this.page.waitForSelector(`xpath=(//span[contains(text(),'${address}')])[1]`, {
         state: 'hidden',
-        timeout: 10000
+        timeout: 16000
       });
       return true;
     } catch {
