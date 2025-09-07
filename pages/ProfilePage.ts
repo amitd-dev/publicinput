@@ -129,7 +129,7 @@ export class ProfilePage extends BasePage {
       .locator(`text=${address}`)
       .locator('..')
       .locator(this.removeAddressButton)
-      .click();
+      .click({ force: true });
       await this.page.locator(this.confirmDeleteButton).click();
   }
 
