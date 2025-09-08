@@ -121,6 +121,7 @@ export class CRMPage extends BasePage {
     TestHelpers.logStep(`Entering search text: ${searchText}`);
     await this.clickElement(this.filterSearchBox);
     await this.fillInput(this.filterSearchBox, searchText);
+    await this.pressEnter(this.filterSearchBox);
   }
 
   /**
@@ -136,7 +137,7 @@ export class CRMPage extends BasePage {
    */
   async clickOnListWithName(listName: string): Promise<void> {
     TestHelpers.logStep(`Clicking on list: ${listName}`);
-    const listSelector = `xpath=//tr[@class='subscriber-list-row odd']//a[@class='pointer' and contains(text(), "${listName}")]`;
+    const listSelector = `xpath=(//tr[@class='subscriber-list-row odd']//a[@class='pointer' and contains(text(), "${listName}")])[1]`;
     await this.clickElement(listSelector);
   }
 
@@ -307,6 +308,6 @@ export class CRMPage extends BasePage {
    */
   async waitForSeconds(seconds: number): Promise<void> {
     TestHelpers.logStep(`Waiting for ${seconds} seconds`);
-    await this.page.waitForTimeout(seconds * 1000);
+    await this.page.waitForLoadState('networkidle');
   }
 }

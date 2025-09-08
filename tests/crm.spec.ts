@@ -15,8 +15,28 @@ test.describe('CRM Tests', () => {
     crmPage = new CRMPage(page);
     userLoginHelpers = new UserLoginHelpers(page);
     
-    // Login as admin for CRM tests
-    await userLoginHelpers.loginAsAdmin('1087');
+    // Login as admin for CRM tests with retry logic
+    let loginAttempts = 0;
+    const maxAttempts = 2;
+    let loginSuccessful = false;
+    
+    while (loginAttempts < maxAttempts && !loginSuccessful) {
+      try {
+        await userLoginHelpers.loginAsAdmin('1087');
+        loginSuccessful = true;
+        console.log(`CRM login successful on attempt ${loginAttempts + 1}`);
+      } catch (error) {
+        loginAttempts++;
+        console.log(`CRM login attempt ${loginAttempts} failed:`, error);
+        
+        if (loginAttempts >= maxAttempts) {
+          throw new Error(`CRM login failed after ${maxAttempts} attempts. Last error: ${error}`);
+        }
+        
+        // Wait before retrying
+        await page.waitForTimeout(2000);
+      }
+    }
   });
 
   test.afterEach(async ({ page }, testInfo) => {
@@ -67,6 +87,9 @@ test.describe('CRM Tests', () => {
     
     // Enter list name into filter search box
     await crmPage.enterFilterSearchText(listName);
+
+    // Wait for search results to load
+    await crmPage.waitForSeconds(3);
     
     // Verify the list with the name is displayed
     const isListDisplayed = await crmPage.verifyListDisplayed(listName);

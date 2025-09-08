@@ -28,8 +28,28 @@ test.describe('Profile Tests', () => {
     loginPage = new LoginPage(page);
     userLoginHelpers = new UserLoginHelpers(page);
     
-    // Login as super admin once for all tests
-    await userLoginHelpers.loginAsSuperAdmin();
+    // Login as super admin once for all tests with retry logic
+    let loginAttempts = 0;
+    const maxAttempts = 2;
+    let loginSuccessful = false;
+    
+    while (loginAttempts < maxAttempts && !loginSuccessful) {
+      try {
+        await userLoginHelpers.loginAsSuperAdmin();
+        loginSuccessful = true;
+        console.log(`Profile test super admin login successful on attempt ${loginAttempts + 1}`);
+      } catch (error) {
+        loginAttempts++;
+        console.log(`Profile test super admin login attempt ${loginAttempts} failed:`, error);
+        
+        if (loginAttempts >= maxAttempts) {
+          throw new Error(`Profile test super admin login failed after ${maxAttempts} attempts. Last error: ${error}`);
+        }
+        
+        // Wait before retrying
+        await page.waitForTimeout(2000);
+      }
+    }
   });
 
   test.afterAll(async () => {

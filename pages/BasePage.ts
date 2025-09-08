@@ -68,6 +68,15 @@ export abstract class BasePage {
   }
 
   /**
+   * Press Enter key on an element
+   */
+  async pressEnter(selector: string): Promise<void> {
+    TestHelpers.logStep(`Pressing Enter on element: ${selector}`);
+    const element = await this.waitForElement(selector);
+    await element.press('Enter');
+  }
+
+  /**
    * Get text content of element
    */
   async getText(selector: string): Promise<string> {
