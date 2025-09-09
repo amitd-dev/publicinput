@@ -21,16 +21,21 @@ export class CRMPage extends BasePage {
   private readonly listItem = '.subscriber-list-row';
   
   // Activity management elements
-  private readonly newActivityButton: string = 'xpath=//button[contains(text(), "New Activity")]';
-  private readonly newActivityModal: string = 'xpath=//div[contains(@class, "modal") and contains(., "New Activity")]';
-  private readonly activityTypeSelect: string = 'xpath=//select[@name="activityType"]';
-  private readonly currentDateButton: string = 'xpath=//button[contains(text(), "Today")]';
-  private readonly associateWithProjectSelect: string = 'xpath=//select[@name="associateWithProject"]';
-  private readonly activityDetailsTextarea: string = 'xpath=//textarea[@name="details"]';
-  private readonly saveNewActivityButton: string = 'xpath=//button[contains(text(), "Save New Activity")]';
-  private readonly activityLogTab: string = 'xpath=//a[contains(text(), "Activity Log")]';
-  private readonly firstActivityEntry: string = 'xpath=//div[contains(@class, "activity-entry")][1]';
-  private readonly activityEditModal: string = 'xpath=//div[contains(@class, "modal") and contains(., "Edit Activity")]';
+  private readonly newActivityButton = 'a.btn.btn-default.m-t-sm.m-b-sm.open-new-activity-modal';
+  private readonly newActivityModal = '.activity-edit-col.col-xs-12';
+  private readonly activityTypeSelectButton = '(//a[@class="chosen-single"])[2]';
+  private readonly activityTypeSearchInput = 'div[id="Activity_ActivityType_chosen"] input[type="text"]';
+  private readonly activityTypeSelect = 'li.active-result:nth-child(1)';
+  private readonly currentDateButton: string = 'xpath=(//input[@id="Activity_TimeStamp"])[1]';
+  private readonly associateWithProjectbtn = 'div[id="projSelect_chosen"] span';
+  private readonly associateWithProjectsearchinput = 'div[id="projSelect_chosen"] input[type="text"]';
+  private readonly associateWithProjectSelect = 'li.active-result.group-option:nth-child(1)';
+  private readonly activityDetailsTextarea: string = 'xpath=//textarea[@id="Activity_Notes"]';
+  private readonly saveNewActivityButton= '.btn.btn-primary.m-t-xs.add-new-activity';
+  private readonly activityLogTab = 'div[data-tab-name="activity"]';
+  private readonly activityTableSearchInput = 'input[aria-controls="activity-tracker-table"]';
+  private readonly firstActivityEntry: string = 'xpath=(//a[@class="edit-activity"])[1]';
+  private readonly activityEditModal: string = 'xpath=//h4[normalize-space()="Edit Activity"]';
   
   // Segment elements
   private readonly segmentSearchBox: string = 'xpath=//input[@placeholder="Search segments..."]';
@@ -154,6 +159,7 @@ export class CRMPage extends BasePage {
    */
   async clickOnNewActivityButton(): Promise<void> {
     TestHelpers.logStep('Clicking on New Activity button');
+    await this.waitForNetworkIdle();
     await this.clickElement(this.newActivityButton);
   }
 
@@ -169,7 +175,29 @@ export class CRMPage extends BasePage {
    */
   async selectActivityType(activityType: string): Promise<void> {
     TestHelpers.logStep(`Selecting activity type: ${activityType}`);
-    await this.selectOption(this.activityTypeSelect, activityType);
+    
+    // Click on the activity type select button to open dropdown
+    await this.clickElement(this.activityTypeSelectButton);
+    
+    // Search for the activity type
+    await this.fillInput(this.activityTypeSearchInput, activityType);
+    // await this.pressEnter(this.activityTypeSearchInput);
+    
+    // Wait for search results and select the first result
+    await this.waitForElement(this.activityTypeSelect);
+    await this.clickElement(this.activityTypeSelect);
+  }
+
+   async searchOnActivityLogTab(searchString: string): Promise<void> {
+    TestHelpers.logStep(`Searching on activity log tab: ${searchString}`);
+    
+    // Click on the activity type select button to open dropdown
+    await this.clickElement(this.activityTableSearchInput);
+    
+    // Search for the activity type
+    await this.fillInput(this.activityTableSearchInput, searchString);
+    await this.pressEnter(this.activityTableSearchInput);
+    await this.waitForSeconds(5);
   }
 
   /**
@@ -185,7 +213,16 @@ export class CRMPage extends BasePage {
    */
   async selectAssociateWithProject(projectName: string): Promise<void> {
     TestHelpers.logStep(`Selecting associate with project: ${projectName}`);
-    await this.selectOption(this.associateWithProjectSelect, projectName);
+    // Click on the activity type select button to open dropdown
+    await this.clickElement(this.associateWithProjectbtn);
+    
+    // Search for the activity type
+    await this.fillInput(this.associateWithProjectsearchinput, projectName);
+    await this.pressEnter(this.associateWithProjectsearchinput);
+    
+    // Wait for search results and select the first result
+    await this.waitForElement(this.associateWithProjectSelect);
+    await this.clickElement(this.associateWithProjectSelect);
   }
 
   /**
@@ -209,6 +246,7 @@ export class CRMPage extends BasePage {
    */
   async clickOnActivityLogTab(): Promise<void> {
     TestHelpers.logStep('Clicking on Activity Log tab');
+    await this.waitForNetworkIdle();
     await this.clickElement(this.activityLogTab);
   }
 
@@ -224,15 +262,16 @@ export class CRMPage extends BasePage {
    * Verify activity details in edit modal
    */
   async verifyActivityDetailsInEditModal(expectedDetails: string): Promise<boolean> {
-    const detailsSelector = `xpath=//div[contains(@class, "modal")]//textarea[contains(text(), "${expectedDetails}")]`;
+    const detailsSelector = `xpath=//textarea[@id='Activity_Notes' and contains(text(), "${expectedDetails}")]`;
     return await this.isElementVisible(detailsSelector);
+
   }
 
   /**
    * Verify activity date in edit modal
    */
   async verifyActivityDateInEditModal(): Promise<boolean> {
-    const dateSelector = 'xpath=//div[contains(@class, "modal")]//input[@type="date"]';
+    const dateSelector = 'xpath=//input[@id="Activity_TimeStamp"]';
     return await this.isElementVisible(dateSelector);
   }
 
@@ -240,8 +279,7 @@ export class CRMPage extends BasePage {
    * Verify associate with project in edit modal
    */
   async verifyAssociateWithProjectInEditModal(): Promise<boolean> {
-    const projectSelector = 'xpath=//div[contains(@class, "modal")]//select[@name="associateWithProject"]';
-    return await this.isElementVisible(projectSelector);
+    return await this.isElementVisible(this.associateWithProjectbtn);
   }
 
   /**
