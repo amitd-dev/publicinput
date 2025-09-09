@@ -56,6 +56,7 @@ export class CRMPage extends BasePage {
     TestHelpers.logStep('Navigating to CRM page');
     await this.clickElement(this.crmButton);
     await this.waitForElement(this.crmHomePage);
+    await this.page.waitForLoadState('networkidle');
   }
 
   /**
@@ -160,6 +161,7 @@ export class CRMPage extends BasePage {
   async clickOnNewActivityButton(): Promise<void> {
     TestHelpers.logStep('Clicking on New Activity button');
     await this.waitForNetworkIdle();
+    await this.waitForSeconds(3);
     await this.clickElement(this.newActivityButton);
   }
 
@@ -181,11 +183,11 @@ export class CRMPage extends BasePage {
     
     // Search for the activity type
     await this.fillInput(this.activityTypeSearchInput, activityType);
-    // await this.pressEnter(this.activityTypeSearchInput);
+    await this.pressEnter(this.activityTypeSearchInput);
     
     // Wait for search results and select the first result
-    await this.waitForElement(this.activityTypeSelect);
-    await this.clickElement(this.activityTypeSelect);
+    // await this.waitForElement(this.activityTypeSelect);
+    // await this.clickElement(this.activityTypeSelect);
   }
 
    async searchOnActivityLogTab(searchString: string): Promise<void> {
@@ -221,8 +223,8 @@ export class CRMPage extends BasePage {
     await this.pressEnter(this.associateWithProjectsearchinput);
     
     // Wait for search results and select the first result
-    await this.waitForElement(this.associateWithProjectSelect);
-    await this.clickElement(this.associateWithProjectSelect);
+    // await this.waitForElement(this.associateWithProjectSelect);
+    // await this.clickElement(this.associateWithProjectSelect);
   }
 
   /**

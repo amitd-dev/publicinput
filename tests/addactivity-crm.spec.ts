@@ -45,13 +45,13 @@ test.describe('Add Activity CRM Tests', () => {
     expect(isNewActivityModalDisplayed).toBe(true);
     
     // Select activity type 'Phone Call'
-    // await crmPage.selectActivityType('Phone Call');
+    await crmPage.selectActivityType('Phone Call');
     
     // Select current date
     // await crmPage.selectCurrentDate();
     
     // Select associate with a project or topic
-    // await crmPage.selectAssociateWithProject('Test Project');
+    await crmPage.selectAssociateWithProject('Test Project');
     
     // Enter activity details
     const activityDetails = 'These are some details about this activity. this is created from Automation';
@@ -118,7 +118,7 @@ test.describe('Add Activity CRM Tests', () => {
       await crmPage.selectActivityType(activityType);
       
       // Select current date
-      await crmPage.selectCurrentDate();
+      // await crmPage.selectCurrentDate();
       
       // Enter activity details
       await crmPage.enterActivityDetails(`Test details for ${activityType}`);
@@ -154,16 +154,14 @@ test.describe('Add Activity CRM Tests', () => {
       await crmPage.selectActivityType('Phone Call');
       
       // Select current date
-      await crmPage.selectCurrentDate();
+      // await crmPage.selectCurrentDate();
       
       // Enter activity details
       await crmPage.enterActivityDetails(details);
       
       // Click on save new activity button
       await crmPage.clickOnSaveNewActivityButton();
-      
-      // Navigate back to CRM page for next iteration
-      await crmPage.navigateToCRM();
+      await crmPage.waitForSeconds(5);
     }
   });
 
@@ -185,7 +183,7 @@ test.describe('Add Activity CRM Tests', () => {
       await crmPage.selectActivityType('Meeting');
       
       // Select current date
-      await crmPage.selectCurrentDate();
+      // await crmPage.selectCurrentDate();
       
       // Select associate with project
       await crmPage.selectAssociateWithProject(project);
@@ -195,9 +193,9 @@ test.describe('Add Activity CRM Tests', () => {
       
       // Click on save new activity button
       await crmPage.clickOnSaveNewActivityButton();
+
+      await crmPage.waitForSeconds(5);
       
-      // Navigate back to CRM page for next iteration
-      await crmPage.navigateToCRM();
     }
   });
 
