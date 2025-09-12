@@ -201,8 +201,19 @@ export abstract class BasePage {
   /**
    * Wait for network to be idle
    */
+  // async waitForNetworkIdle(): Promise<void> {
+  //   await this.page.waitForLoadState('networkidle');
+  // }
+
   async waitForNetworkIdle(): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    try {
+      // Use a shorter timeout for network idle
+      await this.page.waitForLoadState('networkidle', { timeout: 5000 });
+    } catch (error) {
+      // Fallback to domcontentloaded with minimal wait
+      await this.page.waitForLoadState('domcontentloaded');
+      await this.page.waitForTimeout(1000);
+    }
   }
 
   /**

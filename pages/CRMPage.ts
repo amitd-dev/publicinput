@@ -1,6 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { TestHelpers } from '../utils/test-helpers';
+import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
 
 /**
  * CRM Page Object Model
@@ -50,12 +51,48 @@ export class CRMPage extends BasePage {
   }
 
   /**
+   * Retry login with specified user type and customer ID
+   * Similar to retry login functionality in profile page
+   */
+  async retryLogin(userType: UserType, customerId?: string, maxAttempts: number = 2): Promise<void> {
+    const userLoginHelpers = new UserLoginHelpers(this.page);
+    let loginAttempts = 0;
+    let loginSuccessful = false;
+    
+    while (loginAttempts < maxAttempts && !loginSuccessful) {
+      try {
+        TestHelpers.logStep(`Attempting ${userType} login (attempt ${loginAttempts + 1}/${maxAttempts})`);
+        
+        if (userType === UserType.ADMIN && customerId) {
+          await userLoginHelpers.loginAsAdmin(customerId);
+        } else {
+          await userLoginHelpers.loginAsUser(userType, customerId);
+        }
+        
+        loginSuccessful = true;
+        TestHelpers.logStep(`${userType} login successful on attempt ${loginAttempts + 1}`);
+      } catch (error) {
+        loginAttempts++;
+        TestHelpers.logStep(`${userType} login attempt ${loginAttempts} failed: ${error}`);
+        
+        if (loginAttempts >= maxAttempts) {
+          throw new Error(`${userType} login failed after ${maxAttempts} attempts. Last error: ${error}`);
+        }
+        
+        // Wait before retrying
+        await this.page.waitForTimeout(2000);
+      }
+    }
+  }
+
+  /**
    * Navigate to CRM page
    */
   async navigateToCRM(): Promise<void> {
     TestHelpers.logStep('Navigating to CRM page');
     await this.clickElement(this.crmButton);
     await this.waitForElement(this.crmHomePage);
+    // await this.waitForSeconds(4);
     await this.page.waitForLoadState('networkidle');
   }
 
