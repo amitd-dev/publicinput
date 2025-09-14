@@ -1,6 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { TestHelpers } from '../utils/test-helpers';
+import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
 
 /**
  * Segmentation Page Object Model
@@ -22,6 +23,41 @@ export class SegmentationPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
+  }
+
+  /**
+   * Retry login functionality with multiple attempts
+   * Similar to retry login functionality in CRM page
+   */
+  async retryLogin(userType: UserType, customerId?: string, maxAttempts: number = 2): Promise<void> {
+    const userLoginHelpers = new UserLoginHelpers(this.page);
+    let loginAttempts = 0;
+    let loginSuccessful = false;
+    
+    while (loginAttempts < maxAttempts && !loginSuccessful) {
+      try {
+        TestHelpers.logStep(`Attempting ${userType} login (attempt ${loginAttempts + 1}/${maxAttempts})`);
+        
+        if (userType === UserType.ADMIN && customerId) {
+          await userLoginHelpers.loginAsAdmin(customerId);
+        } else {
+          await userLoginHelpers.loginAsUser(userType, customerId);
+        }
+        
+        loginSuccessful = true;
+        TestHelpers.logStep(`${userType} login successful on attempt ${loginAttempts + 1}`);
+      } catch (error) {
+        loginAttempts++;
+        TestHelpers.logStep(`${userType} login attempt ${loginAttempts} failed: ${error}`);
+        
+        if (loginAttempts >= maxAttempts) {
+          throw new Error(`${userType} login failed after ${maxAttempts} attempts. Last error: ${error}`);
+        }
+        
+        // Wait before retrying
+        await this.page.waitForTimeout(2000);
+      }
+    }
   }
 
   /**

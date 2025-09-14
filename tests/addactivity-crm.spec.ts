@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { CRMPage } from '../pages/CRMPage';
-import { UserLoginHelpers } from '../utils/user-login-helpers';
+import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
 
 /**
  * Add Activity CRM functionality tests
@@ -12,11 +12,12 @@ test.describe('Add Activity CRM Tests', () => {
   let userLoginHelpers: UserLoginHelpers;
 
   test.beforeEach(async ({ page }) => {
+    // Initialize page objects
     crmPage = new CRMPage(page);
     userLoginHelpers = new UserLoginHelpers(page);
     
-    // Login as admin for CRM tests
-    await userLoginHelpers.loginAsAdmin('1087');
+    // Login as admin for each test with retry logic using CRMPage retry method
+    await crmPage.retryLogin(UserType.ADMIN, '1087');
   });
 
   test.afterEach(async ({ page }, testInfo) => {
