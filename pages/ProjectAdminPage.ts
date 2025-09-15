@@ -17,7 +17,7 @@ export class ProjectAdminPage extends BasePage {
   private readonly projectNameElement: string = 'xpath=//input[@id="projectName"]';
   private readonly projectNameInput: string = 'xpath=//input[@id="projectName"]';
   private readonly saveButton: string = 'xpath=//button[@id="projectNameSaveButton"]';
-  private readonly successMessage: string = 'xpath=//span[normalize-space()="Successfully updated."]';
+  private readonly successMessage: string = 'xpath=//span[contains(., "Successfully updated")]';
   
   // Tab elements
   private readonly activeTab: string = 'xpath=//ul[@id="projectAdminMainTabNav"]//li[@class="active"]';
@@ -140,16 +140,24 @@ export class ProjectAdminPage extends BasePage {
    * Wait for specified seconds
    */
   async waitForSeconds(seconds: number): Promise<void> {
+  try {
+    // Log the action being performed.
     TestHelpers.logStep(`Waiting for ${seconds} seconds`);
+    
+    // Wait for the specified duration.
     await this.page.waitForTimeout(seconds * 1000);
+  
+  } catch (error) {
+    // Log an error message if the wait fails for any reason.
+    console.error(`Failed to wait for ${seconds} seconds.`, error);
   }
+}
 
   /**
    * Verify specific tab is open
    */
   async verifyTabOpen(tabName: string): Promise<boolean> {
     let tabContentSelector: string;
-    
     switch (tabName.toLowerCase()) {
       case 'email':
         tabContentSelector = this.emailTabContent;
@@ -169,7 +177,6 @@ export class ProjectAdminPage extends BasePage {
       default:
         throw new Error(`Unknown tab name: ${tabName}`);
     }
-    
     return await this.isElementVisible(tabContentSelector);
   }
 
@@ -205,11 +212,21 @@ export class ProjectAdminPage extends BasePage {
   }
 
   /**
+   * Wait for success popup to disappear
+   */
+  async waitForSuccessMessageToDisappear(): Promise<void> {
+    TestHelpers.logStep('Waiting for success message to disappear');
+    await this.page.waitForSelector(this.successMessage, { state: 'hidden', timeout: 10000 });
+  }
+
+  /**
    * Verify project name is updated
    */
   async verifyProjectNameUpdated(expectedName: string): Promise<boolean> {
-    const projectNameSelector = `xpath=//input[@id="projectName" and @value="${expectedName}"]`;
-    return await this.isElementVisible(projectNameSelector);
+    // Get the current value of the project name input field
+    const currentValue = await this.page.inputValue(this.projectNameInput);
+    console.log(`Current project name: ${currentValue}, Expected project name: ${expectedName}`);
+    return currentValue === expectedName;
   }
 
   /**
@@ -245,17 +262,22 @@ export class ProjectAdminPage extends BasePage {
     
     // Update project name
     await this.updateProjectName(newName);
-
-    await this.waitForSeconds(3); // Wait for 1 second to ensure input is registered
     
     // Click save button
     await this.clickOnSaveButton();
+
+    await this.waitForSeconds(2);
     
     // Verify success message
     const isSuccessMessageDisplayed = await this.verifySuccessMessageDisplayed();
     if (!isSuccessMessageDisplayed) {
       return false;
     }
+
+    await this.waitForSeconds(5);
+    
+    // Return true if success message is displayed
+    return true;
     
     // await this.page.waitForLoadState('networkidle');
     // // Verify project name is updated

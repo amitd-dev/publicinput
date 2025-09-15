@@ -1,4 +1,4 @@
-import { test, expect, Browser, BrowserContext, Page, TestInfo } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { SegmentationPage } from '../pages/SegmentationPage';
 import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
 
@@ -8,34 +8,19 @@ import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
  * Tests segmentation functionality including count consistency verification
  */
 test.describe('Segmentation Tests', () => {
-  let browser: Browser;
-  let context: BrowserContext;
-  let page: Page;
   let segmentationPage: SegmentationPage;
   let userLoginHelpers: UserLoginHelpers;
 
-  test.beforeAll(async ({ browser: testBrowser }) => {
-    // Create a new browser context and page for all tests
-    browser = testBrowser;
-    context = await browser.newContext();
-    page = await context.newPage();
-    
+  test.beforeEach(async ({ page }) => {
     // Initialize page objects
     segmentationPage = new SegmentationPage(page);
     userLoginHelpers = new UserLoginHelpers(page);
     
-    // Login as admin once for all tests with retry logic using SegmentationPage retry method
+    // Login as admin for each test with retry logic using SegmentationPage retry method
     await segmentationPage.retryLogin(UserType.ADMIN, '1087');
   });
 
-  test.afterAll(async () => {
-    // Clean up the context and page
-    if (context) {
-      await context.close();
-    }
-  });
-
-  test.afterEach(async ({}, testInfo: TestInfo) => {
+  test.afterEach(async ({ page }, testInfo) => {
     // Take screenshot on failure
     if (testInfo.status === 'failed') {
       await page.screenshot({ 

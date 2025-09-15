@@ -1,4 +1,4 @@
-import { test, expect, Browser, BrowserContext, Page, TestInfo } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { ProfilePage } from '../pages/ProfilePage';
 import { LoginPage } from '../pages/LoginPage';
 import { UserLoginHelpers } from '../utils/user-login-helpers';
@@ -10,25 +10,17 @@ import { envConfig } from '../utils/env';
  * Tests address management functionality in user profiles
  */
 test.describe('Profile Tests', () => {
-  let browser: Browser;
-  let context: BrowserContext;
-  let page: Page;
   let profilePage: ProfilePage;
   let loginPage: LoginPage;
   let userLoginHelpers: UserLoginHelpers;
 
-  test.beforeAll(async ({ browser: testBrowser }) => {
-    // Create a new browser context and page for all tests
-    browser = testBrowser;
-    context = await browser.newContext();
-    page = await context.newPage();
-    
+  test.beforeEach(async ({ page }) => {
     // Initialize page objects
     profilePage = new ProfilePage(page);
     loginPage = new LoginPage(page);
     userLoginHelpers = new UserLoginHelpers(page);
     
-    // Login as super admin once for all tests with retry logic
+    // Login as super admin for each test with retry logic
     let loginAttempts = 0;
     const maxAttempts = 2;
     let loginSuccessful = false;
@@ -52,14 +44,7 @@ test.describe('Profile Tests', () => {
     }
   });
 
-  test.afterAll(async () => {
-    // Clean up the context and page
-    if (context) {
-      await context.close();
-    }
-  });
-
-  test.afterEach(async ({}, testInfo: TestInfo) => {
+  test.afterEach(async ({ page }, testInfo) => {
     // Take screenshot on failure
     if (testInfo.status === 'failed') {
       await page.screenshot({ 

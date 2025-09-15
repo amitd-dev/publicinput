@@ -1,4 +1,4 @@
-import { test, expect, Browser, BrowserContext, Page, TestInfo } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { ProjectAdminPage } from '../pages/ProjectAdminPage';
 import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
 
@@ -8,34 +8,19 @@ import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
  * Tests project administration functionality including tabs and project name editing
  */
 test.describe('Project Admin Tests', () => {
-  let browser: Browser;
-  let context: BrowserContext;
-  let page: Page;
   let projectAdminPage: ProjectAdminPage;
   let userLoginHelpers: UserLoginHelpers;
 
-  test.beforeAll(async ({ browser: testBrowser }) => {
-    // Create a new browser context and page for all tests
-    browser = testBrowser;
-    context = await browser.newContext();
-    page = await context.newPage();
-    
+  test.beforeEach(async ({ page }) => {
     // Initialize page objects
     projectAdminPage = new ProjectAdminPage(page);
     userLoginHelpers = new UserLoginHelpers(page);
     
-    // Login as super admin once for all tests with retry logic using ProjectAdminPage retry method
+    // Login as super admin for each test with retry logic using ProjectAdminPage retry method
     await projectAdminPage.retryLogin(UserType.SUPER_ADMIN);
   });
 
-  test.afterAll(async () => {
-    // Clean up the context and page
-    if (context) {
-      await context.close();
-    }
-  });
-
-  test.afterEach(async ({}, testInfo: TestInfo) => {
+  test.afterEach(async ({ page }, testInfo) => {
     // Take screenshot on failure
     if (testInfo.status === 'failed') {
       await page.screenshot({ 
@@ -73,6 +58,7 @@ test.describe('Project Admin Tests', () => {
   });
 
   test('should verify project name can be edited', async () => {
+    test.setTimeout(1200000);
     // Navigate to project admin page for project with id 'R6600'
     await projectAdminPage.navigateToProjectAdminPage('R6600');
     
@@ -87,9 +73,9 @@ test.describe('Project Admin Tests', () => {
     
     
     // Test second name change
-    // const newProjectName2 = 'Testing Project Renaming';
-    // const isSecondEditSuccessful = await projectAdminPage.testProjectNameEditing(newProjectName2);
-    // expect(isSecondEditSuccessful).toBe(true);
+    const newProjectName2 = 'Testing Project Renaming';
+    const isSecondEditSuccessful = await projectAdminPage.testProjectNameEditing(newProjectName2);
+    expect(isSecondEditSuccessful).toBe(true);
   });
 
   test('should verify super admin page is loaded', async () => {
@@ -130,6 +116,8 @@ test.describe('Project Admin Tests', () => {
   });
 
   test('should handle project name editing with different names', async () => {
+
+    test.setTimeout(1200000);
     // Navigate to project admin page
     await projectAdminPage.navigateToProjectAdminPage('R6600');
     

@@ -1,4 +1,4 @@
-import { test, expect, Browser, BrowserContext, Page, TestInfo } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { CRMPage } from '../pages/CRMPage';
 import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
 
@@ -8,34 +8,19 @@ import { UserLoginHelpers, UserType } from '../utils/user-login-helpers';
  * Tests CRM list creation and management functionality
  */
 test.describe('CRM Tests', () => {
-  let browser: Browser;
-  let context: BrowserContext;
-  let page: Page;
   let crmPage: CRMPage;
   let userLoginHelpers: UserLoginHelpers;
 
-  test.beforeAll(async ({ browser: testBrowser }) => {
-    // Create a new browser context and page for all tests
-    browser = testBrowser;
-    context = await browser.newContext();
-    page = await context.newPage();
-    
+  test.beforeEach(async ({ page }) => {
     // Initialize page objects
     crmPage = new CRMPage(page);
     userLoginHelpers = new UserLoginHelpers(page);
     
-    // Login as admin once for all tests with retry logic using CRMPage retry method
+    // Login as admin for each test with retry logic using CRMPage retry method
     await crmPage.retryLogin(UserType.ADMIN, '1087');
   });
 
-  test.afterAll(async () => {
-    // Clean up the context and page
-    if (context) {
-      await context.close();
-    }
-  });
-
-  test.afterEach(async ({}, testInfo: TestInfo) => {
+  test.afterEach(async ({ page }, testInfo) => {
     // Take screenshot on failure
     if (testInfo.status === 'failed') {
       await page.screenshot({ 
