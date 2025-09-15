@@ -44,25 +44,75 @@ playwright-automation-framework/
 
 ## 🛠️ Installation
 
+### Quick Setup (Cross-Platform)
+
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
    cd playwright-automation-framework
    ```
 
-2. **Install dependencies**
+2. **Run the automated setup script**
+   ```bash
+   npm run setup
+   ```
+   
+   This will automatically:
+   - Install dependencies
+   - Install Playwright browsers
+   - Create necessary directories
+   - Check environment configuration
+   - Verify the setup
+
+### Manual Setup
+
+1. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Install Playwright browsers**
+2. **Install Playwright browsers**
    ```bash
    npm run install:browsers
    ```
 
-4. **Configure environment variables**
+3. **Configure environment variables**
    - Copy and modify the `.env.dev`, `.env.qa`, and `.env.prod` files
    - Update the URLs, credentials, and other environment-specific values
+
+### Windows-Specific Setup
+
+If you're on Windows and prefer batch scripts:
+
+```cmd
+REM Run Windows batch setup
+npm run setup:windows
+```
+
+Or manually:
+
+```cmd
+REM Install dependencies
+npm install
+
+REM Install Playwright browsers
+npx playwright install --with-deps
+
+REM Create directories
+mkdir test-results\screenshots
+mkdir test-results\traces
+mkdir test-results\videos
+mkdir test-results\downloads
+```
+
+### Unix/Linux/macOS Setup
+
+For Unix-based systems:
+
+```bash
+# Run Unix setup script
+npm run setup:unix
+```
 
 ## 🔧 Configuration
 
@@ -86,8 +136,21 @@ HEADLESS=true
 
 ### Setting Active Environment
 
-The active environment is determined by the `ENV` environment variable:
+The active environment is determined by the `ENV` environment variable. The framework now uses `cross-env` for cross-platform compatibility:
 
+#### Using npm scripts (Recommended - Cross-Platform)
+```bash
+# Development (default)
+npm run test:dev
+
+# QA
+npm run test:qa
+
+# Production
+npm run test:prod
+```
+
+#### Direct command line (Unix/Linux/macOS)
 ```bash
 # Development (default)
 ENV=dev npm test
@@ -97,6 +160,30 @@ ENV=qa npm test
 
 # Production
 ENV=prod npm test
+```
+
+#### Windows Command Prompt
+```cmd
+REM Development (default)
+set ENV=dev && npm test
+
+REM QA
+set ENV=qa && npm test
+
+REM Production
+set ENV=prod && npm test
+```
+
+#### Windows PowerShell
+```powershell
+# Development (default)
+$env:ENV="dev"; npm test
+
+# QA
+$env:ENV="qa"; npm test
+
+# Production
+$env:ENV="prod"; npm test
 ```
 
 ## 🧪 Running Tests
@@ -320,6 +407,70 @@ npm run test:ui
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## 🔧 Troubleshooting
+
+### Windows-Specific Issues
+
+#### Environment Variables Not Working
+If you're having issues with environment variables on Windows:
+
+1. **Use npm scripts instead of direct commands:**
+   ```bash
+   # ✅ Good - Cross-platform
+   npm run test:dev
+   
+   # ❌ Avoid on Windows
+   ENV=dev npm test
+   ```
+
+2. **Install cross-env if not already installed:**
+   ```bash
+   npm install --save-dev cross-env
+   ```
+
+3. **Check PowerShell execution policy:**
+   ```powershell
+   Get-ExecutionPolicy
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
+
+#### Path Issues
+If you encounter path-related issues on Windows:
+
+1. **Use forward slashes in configuration files**
+2. **Ensure Node.js is in your PATH**
+3. **Use the Windows batch script for setup:**
+   ```cmd
+   npm run setup:windows
+   ```
+
+#### Permission Issues
+If you encounter permission issues:
+
+1. **Run Command Prompt as Administrator**
+2. **Check antivirus software** - it might be blocking Playwright
+3. **Add exceptions for the project directory**
+
+### Common Issues
+
+#### Browser Installation Fails
+```bash
+# Try installing browsers manually
+npx playwright install --with-deps
+
+# On Windows, you might need to run as Administrator
+```
+
+#### Environment Files Not Loading
+1. Ensure `.env.dev`, `.env.qa`, and `.env.prod` files exist
+2. Check file encoding (should be UTF-8)
+3. Verify environment variable names match exactly
+
+#### Tests Timing Out
+1. Increase timeout values in configuration
+2. Check network connectivity
+3. Verify application URLs are correct
+
 ## 🆘 Support
 
 For questions and support:
@@ -328,6 +479,7 @@ For questions and support:
 2. Review existing issues
 3. Create a new issue with detailed information
 4. Include test artifacts and logs when reporting bugs
+5. Specify your operating system and Node.js version
 
 ---
 
