@@ -298,7 +298,7 @@ export class ProjectAdminPage extends BasePage {
    */
   async navigateToCustomerDashboard(customerId: string): Promise<void> {
     TestHelpers.logStep(`Navigating to customer dashboard for customer: ${customerId}`);
-    const customerDashboardUrl = `${this.baseUrl}/CustomerDashboard/${customerId}`;
+    const customerDashboardUrl = `${this.baseUrl}/Customer/CivicHome/${customerId}`;
     await this.navigateTo(customerDashboardUrl);
   }
 
@@ -306,7 +306,7 @@ export class ProjectAdminPage extends BasePage {
    * Verify customer dashboard page is displayed
    */
   async verifyCustomerDashboardDisplayed(expectedTitle: string): Promise<boolean> {
-    const titleSelector = `xpath=//h1[contains(text(), "${expectedTitle}")]`;
+    const titleSelector = `xpath=//h2[contains(text(), "${expectedTitle}")]`;
     return await this.isElementVisible(titleSelector);
   }
 }
