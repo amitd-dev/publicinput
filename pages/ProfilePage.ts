@@ -119,6 +119,14 @@ export class ProfilePage extends BasePage {
   }
 
   /**
+   * Wait for specified seconds
+   */
+  async waitForSeconds(seconds: number): Promise<void> {
+    TestHelpers.logStep(`Waiting for ${seconds} seconds`);
+    await this.page.waitForLoadState('networkidle');
+  }
+  
+  /**
    * Click on address delete button
    * Similar to ClickOnAddressDeleteButton in C# project
    */

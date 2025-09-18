@@ -242,16 +242,73 @@ export class UserLoginHelpers {
   /**
    * Logout current user
    */
-  async logout(): Promise<void> {
+  async logout(userType: UserType,): Promise<void> {
     TestHelpers.logStep('Logging out current user');
-    
-    // Look for logout button/link and click it
-    try {
-      await this.page.click('a[href*="logout"], button:has-text("Logout"), a:has-text("Sign Out")');
-      await this.page.waitForTimeout(2000);
-    } catch (error) {
-      TestHelpers.logStep('Logout button not found, navigating to login page');
-      await this.loginPage.navigateToLoginPage();
+
+     switch (userType) {
+      case UserType.SUPER_ADMIN:
+        // Look for logout button/link and click it
+        try {
+          await this.page.click('//i[@class="i i-logout"]');
+          await this.page.waitForTimeout(2000);
+        } catch (error) {
+          TestHelpers.logStep('Logout button not found, navigating to login page');
+          await this.loginPage.navigateToLoginPage();
+        }
+        break;
+      case UserType.ADMIN:
+        // Look for logout button/link and click it
+        try {
+          await this.page.click('//i[@class="i i-logout"]');
+          await this.page.waitForTimeout(2000);
+        } catch (error) {
+          TestHelpers.logStep('Logout button not found, navigating to login page');
+          await this.loginPage.navigateToLoginPage();
+        }
+        break;
+      case UserType.DATA_VIEWER:
+        // Look for logout button/link and click it
+        try {
+          await this.page.click('a[href="/Account/logoff?clearUserId=true"]');
+          await this.page.waitForTimeout(2000);
+        } catch (error) {
+          TestHelpers.logStep('Logout button not found, navigating to login page');
+          await this.loginPage.navigateToLoginPage();
+        }
+        break;
+      case UserType.EDITOR:
+        // Look for logout button/link and click it
+        try {
+          await this.page.click('//i[@class="i i-logout"]');
+          await this.page.waitForTimeout(2000);
+        } catch (error) {
+          TestHelpers.logStep('Logout button not found, navigating to login page');
+          await this.loginPage.navigateToLoginPage();
+        }
+        break;
+      case UserType.NONE:
+        // Look for logout button/link and click it
+        try {
+          await this.page.click('a[href="/Account/logoff?clearUserId=true"]');
+          await this.page.waitForTimeout(2000);
+        } catch (error) {
+          TestHelpers.logStep('Logout button not found, navigating to login page');
+          await this.loginPage.navigateToLoginPage();
+        }
+        break;
+      case UserType.PUBLISHER:
+        // Look for logout button/link and click it
+        try {
+          await this.page.click('//i[@class="i i-logout"]');
+          await this.page.waitForTimeout(2000);
+        } catch (error) {
+          TestHelpers.logStep('Logout button not found, navigating to login page');
+          await this.loginPage.navigateToLoginPage();
+        }
+        break;
+      default:
+        throw new Error(`Unsupported user type: ${userType}`);
     }
+    
   }
 }

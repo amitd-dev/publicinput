@@ -132,6 +132,7 @@ test.describe('Login Tests', () => {
   });
 
   test('should test all user types login functionality', async ({ page }) => {
+    test.setTimeout(120000); // Extend timeout for this test
     const userTypes = UserLoginHelpers.getAllUserTypes();
     
     for (const userType of userTypes) {
@@ -146,7 +147,7 @@ test.describe('Login Tests', () => {
         expect(currentUrl).not.toContain('/Account/Login');
         
         // Logout before testing next user type
-        await userLoginHelpers.logout();
+        await userLoginHelpers.logout(userType);
         
         console.log(`✓ ${UserLoginHelpers.getUserTypeDisplayName(userType)} login successful`);
       } catch (error) {

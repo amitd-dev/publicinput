@@ -65,7 +65,7 @@ test.describe('Add Activity CRM Tests', () => {
     await crmPage.navigateToCRM();
     
     // Wait 3 seconds
-    await crmPage.waitForNetworkIdle();
+    // await crmPage.waitForNetworkIdle();
     
     // Click on activity log tab
     await crmPage.clickOnActivityLogTab();
@@ -126,6 +126,8 @@ test.describe('Add Activity CRM Tests', () => {
       
       // Click on save new activity button
       await crmPage.clickOnSaveNewActivityButton();
+
+      await crmPage.waitForSeconds(5);
       
       // Navigate back to CRM page for next iteration
       await crmPage.navigateToCRM();

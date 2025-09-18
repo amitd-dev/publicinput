@@ -107,7 +107,7 @@ test.describe('Profile Tests', () => {
     // Add first address
     await profilePage.clickOnAddAddressButton();
     await profilePage.enterAddress('215 Josh Ln, San Antonio, TX 78245, USA');
-    await page.waitForTimeout(7000); // Wait for address to be processed
+    await profilePage.waitForSeconds(3); // Wait for address to be processed
     
     // Verify address was added
     const addressAdded = await profilePage.verifyAddress('215 Josh Ln, San Antonio, TX 78245, USA');
@@ -121,7 +121,7 @@ test.describe('Profile Tests', () => {
     // Try to add duplicate address
     await profilePage.clickOnAddAddressButton();
     await profilePage.enterAddress('215 Josh Ln, San Antonio, TX 78245, USA');
-    await page.waitForTimeout(5000); // Wait for processing
+    await profilePage.waitForSeconds(3);
     
     // Verify duplicate notification appears
     const notificationText = await profilePage.getNotificationText();
@@ -142,7 +142,7 @@ test.describe('Profile Tests', () => {
     
     // Delete the address
     await profilePage.clickOnAddressDeleteButton('215 Josh Ln, San Antonio, TX 78245, USA');
-    await page.waitForTimeout(5000); // Wait for deletion
+    await profilePage.waitForSeconds(3);
     
     // Verify address is deleted
     const addressDeleted = await profilePage.verifyAddressIsDeleted('215 Josh Ln, San Antonio, TX 78245, USA');
@@ -153,7 +153,7 @@ test.describe('Profile Tests', () => {
     expect(finalAddressCount).toBe(initialAddressCount);
   });
 
-  test('should prevent duplicate address entries', async () => {
+  test('should prevent duplicate address entries', async ({ page }) => {
     // Navigate to profile page
     await profilePage.navigateToSaSpeakUp();
     
@@ -192,7 +192,7 @@ test.describe('Profile Tests', () => {
     await page.waitForTimeout(5000);
   });
 
-  test('should handle multiple address operations', async () => {
+  test('should handle multiple address operations', async ({ page }) => {
     // Navigate to profile page
     await profilePage.navigateToSaSpeakUp();
     
@@ -232,7 +232,7 @@ test.describe('Profile Tests', () => {
     expect(finalCount).toBe(initialAddressCount);
   });
 
-  test('should handle address input validation', async () => {
+  test('should handle address input validation', async ({ page }) => {
     // Navigate to profile page
     await profilePage.navigateToSaSpeakUp();
     
@@ -252,7 +252,7 @@ test.describe('Profile Tests', () => {
     expect(isInputEmpty).toBe(true);
   });
 
-  test('should persist address data after page reload', async () => {
+  test('should persist address data after page reload', async ({ page }) => {
     // Navigate to profile page
     await profilePage.navigateToSaSpeakUp();
     
