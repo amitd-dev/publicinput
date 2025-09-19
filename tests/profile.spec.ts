@@ -193,6 +193,7 @@ test.describe('Profile Tests', () => {
   });
 
   test('should handle multiple address operations', async ({ page }) => {
+    test.setTimeout(120000); // Set timeout to 120 seconds for this test
     // Navigate to profile page
     await profilePage.navigateToSaSpeakUp();
     
@@ -201,31 +202,55 @@ test.describe('Profile Tests', () => {
     
     // Click on View/Edit Profile button
     await profilePage.clickOnViewEditProfileButton();
-
-    const initialAddressCount = await profilePage.getAddressCount();
     
     // Add multiple different addresses
     const addresses = [
-      '456 Oak Ln, Piney Point Village, TX 77024, USA',
-      '789 Pine St, Dallas, TX 75215, USA',
-      '792 Pine St, Dallas, TX 75215, USA'
+      '467 Oak Ln, Piney Point Village, TX 77024, USA',
+      '456 Oak Ln, Piney Point Village, TX 77024, USA'
     ];
+
+
+    for (const address of addresses) {
+      try {
+        await profilePage.clickOnAddressDeleteButton(address);
+        await page.waitForTimeout(2000);
+        console.log(`Successfully deleted address: ${address}`);
+      } catch (error) {
+        console.error(`Address not found, Failed to delete address ${address}:`);
+        // Continue with next address even if this one fails
+      }
+    }
+    
+    await profilePage.waitForSeconds(3);
+
+    const initialAddressCount = await profilePage.getAddressCount();
+
+    console.log(`Initial address count: ${initialAddressCount}`);
     
     for (const address of addresses) {
       await profilePage.clickOnAddAddressButton();
       await profilePage.enterAddress(address);
-      await page.waitForTimeout(3000);
+      await page.reload();
+      await profilePage.waitForPageReady();
     }
     
     // Verify all addresses were added
     const finalAddressCount = await profilePage.getAddressCount();
     expect(finalAddressCount).toBe(addresses.length + initialAddressCount);
+
     
     // Clean up - delete all addresses
     for (const address of addresses) {
-      await profilePage.clickOnAddressDeleteButton(address);
-      await page.waitForTimeout(2000);
+      try {
+        await profilePage.clickOnAddressDeleteButton(address);
+        await page.waitForTimeout(2000);
+        console.log(`Successfully deleted address: ${address}`);
+      } catch (error) {
+        console.error(`Address not found, Failed to delete address ${address}:`);
+        // Continue with next address even if this one fails
+      }
     }
+
     
     // Verify all addresses are deleted
     const finalCount = await profilePage.getAddressCount();

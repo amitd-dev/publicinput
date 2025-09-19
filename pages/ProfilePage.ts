@@ -20,7 +20,8 @@ export class ProfilePage extends BasePage {
   private readonly addressRow = 'div.location-row';
   private readonly addressValue = 'span.attr-value';
   private readonly removeAddressButton = 'button.remove-attr';
-  private readonly confirmDeleteButton = '.btn.btn-danger.btn-delete';
+  //private readonly confirmDeleteButton = '.btn.btn-danger.btn-delete';
+  private readonly confirmDeleteButton = '(//button[normalize-space()="Delete Address"])[1]';
   private readonly notificationContainer = 'div.notifyjs-container';
   private readonly notificationBootstrap = 'div.notifyjs-bootstrap-warn';
   private readonly notificationText = 'span';
@@ -138,7 +139,9 @@ export class ProfilePage extends BasePage {
       .locator('..')
       .locator(this.removeAddressButton)
       .click({ force: true });
-      await this.page.locator(this.confirmDeleteButton).click();
+    await this.waitForSeconds(5);
+    await this.page.click(this.confirmDeleteButton);
+    await this.page.reload();
   }
 
   /**
